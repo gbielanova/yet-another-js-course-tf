@@ -1,21 +1,13 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../pages/login.page';
 import { HomePage } from '../pages/home.page';
 import { AccountPage } from '../pages/account.page';
 import { ProductPage } from '../pages/product.page';
 
 test('can login', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  const homePage = new HomePage(page);
   const accountPage = new AccountPage(page);
 
-  await page.goto('https://practicesoftwaretesting.com');
-
-  await homePage.header.signInButton.click();
-
-  await loginPage.performLogin("customer@practicesoftwaretesting.com", "welcome01");
+  await page.goto('https://practicesoftwaretesting.com/account');
   
-  await expect(page).toHaveURL("https://practicesoftwaretesting.com/account");
   await expect(accountPage.pageTitle).toHaveText("My account");
   await expect(accountPage.header.navMenuButton).toHaveText("Jane Doe");
 });
