@@ -5,10 +5,14 @@ export class HomePage{
     page: Page;
     header: HeaderFragment;
     combinationPliersHeader: Locator;
+    products: Locator;
+    sortSelect: Locator;
 
     constructor(page: Page) {
         this.page = page;
         this.header = new HeaderFragment(this.page);
         this.combinationPliersHeader = this.page.getByText(" Combination Pliers ");
+        this.products = this.page.getByTestId('product-name');
+        this.sortSelect = this.page.getByTestId('sort');
     }
 }
