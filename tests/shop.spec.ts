@@ -4,6 +4,7 @@ import { AccountPage } from '../pages/account.page';
 import { ProductPage } from '../pages/product.page';
 import { AlertPage } from '../pages/alert.page';
 import { CartPage } from '../pages/cart.page';
+import { PowerTools } from '../enums/categories.enum';
 
 test('can login', async ({ page }) => {
   const accountPage = new AccountPage(page);
@@ -114,4 +115,25 @@ test('can add product to cart', async ({ page }) => {
       expect(prices).toEqual(expected);
     }).toPass({ timeout: 10000 });
   });
+});
+
+test('can filter by category', async ({ page }) => {
+  const homePage = new HomePage(page);
+
+  await page.goto('https://practicesoftwaretesting.com');
+
+  // the filters render before the app has bound their change handlers,
+  // so wait for the first product load to complete before filtering
+  await expect(homePage.products).not.toHaveCount(0);
+
+  await homePage.categoryFilter(PowerTools.Sander).check();
+
+  await expect(async () => {
+    const names = (await homePage.products.allTextContents()).map(n => n.trim());
+    expect(names.length).toBeGreaterThan(0);
+
+    for (const name of names) {
+      expect(name).toContain(PowerTools.Sander);
+    }
+  }).toPass({ timeout: 10000 });
 });
