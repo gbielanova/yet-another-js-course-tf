@@ -84,3 +84,34 @@ test('can add product to cart', async ({ page }) => {
     }).toPass({ timeout: 10000 });
   });
 });
+
+[
+  { sort: 'price,asc'},
+  { sort: 'price,desc'},
+].forEach(({ sort }) => {
+  test(`can perform sorting by price ${sort}`, async ({ page }) => {
+    const homePage = new HomePage(page);
+
+    await page.goto('https://practicesoftwaretesting.com');
+    
+    // the select exists before the app has bound its change handler,
+    // so wait for the first product load to complete before sorting
+    await expect(homePage.products).not.toHaveCount(0);
+
+    await homePage.sortSelect.selectOption(sort);
+
+    await expect(homePage.sortSelect).toHaveValue(sort);
+
+    await expect(async () => {
+      const prices = (await homePage.productPrices.allTextContents())
+        .map(n => parseFloat(n.replace(/[^\d.]/g, '')));
+      expect(prices.length).toBeGreaterThan(1);
+      expect(prices).not.toContain(NaN);
+
+      const expected = [...prices].sort((a, b) => a - b);
+      if (sort === 'price,desc') expected.reverse();
+
+      expect(prices).toEqual(expected);
+    }).toPass({ timeout: 10000 });
+  });
+});
