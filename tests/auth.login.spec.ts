@@ -9,13 +9,13 @@ test('Verify successfull login', async ({ page }) => {
   const loginPage = new LoginPage(page);
   const homePage = new HomePage(page);
 
-  await page.goto('https://practicesoftwaretesting.com');
+  await page.goto('/');
 
   await homePage.header.signInButton.click();
 
-  await loginPage.performLogin("customer@practicesoftwaretesting.com", "welcome01");
+  await loginPage.performLogin('customer@practicesoftwaretesting.com', 'welcome01');
 
-  await expect(page).toHaveURL("https://practicesoftwaretesting.com/account");
+  await expect(page).toHaveURL('/account');
 
   await page.context().storageState({ path: authFile });
 });

@@ -1,17 +1,15 @@
-import { Locator, Page } from "@playwright/test";
-import { HeaderFragment } from "./header.fragment";
+import { Locator, Page } from '@playwright/test';
+import { HeaderFragment } from './header.fragment';
 
 export class CartPage{
     page: Page;
     header: HeaderFragment;
-    cartItems: Locator;
     productTitles: Locator;
     checkoutButton: Locator;
 
     constructor(page: Page){
         this.page = page;
         this.header = new HeaderFragment(this.page);
-        this.cartItems = page.locator('tbody').locator('tr');
         this.productTitles = page.getByTestId('product-title');
         this.checkoutButton = page.getByTestId('proceed-1');
     }

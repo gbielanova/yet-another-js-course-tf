@@ -2,31 +2,31 @@ import { test, expect } from '@playwright/test';
 import { HomePage } from '../pages/home.page';
 import { AccountPage } from '../pages/account.page';
 import { ProductPage } from '../pages/product.page';
-import { AlertPage } from '../pages/alert.page';
 import { CartPage } from '../pages/cart.page';
 import { PowerTools } from '../enums/categories.enum';
+import { SortingOptions } from '../enums/sorting.enum';
 
 test('can login', async ({ page }) => {
   const accountPage = new AccountPage(page);
 
-  await page.goto('https://practicesoftwaretesting.com/account');
+  await page.goto('/account');
   
-  await expect(accountPage.pageTitle).toHaveText("My account");
-  await expect(accountPage.header.navMenuButton).toHaveText("Jane Doe");
+  await expect(accountPage.pageTitle).toHaveText('My account');
+  await expect(accountPage.header.navMenuButton).toHaveText('Jane Doe');
 });
 
 test('can view product details', async ({ page }) => {
   const homePage = new HomePage(page);
   const productPage = new ProductPage(page);
 
-  await page.goto('https://practicesoftwaretesting.com');
+  await page.goto('/');
 
   await homePage.combinationPliersHeader.click();
 
-  await expect(page).toHaveURL(/https:\/\/practicesoftwaretesting\.com\/product/);
+  await expect(page).toHaveURL(/\/product\//);
 
-  await expect(productPage.productName).toHaveText(" Combination Pliers ");
-  await expect(productPage.productPrice).toHaveText("14.15");
+  await expect(productPage.productName).toHaveText(' Combination Pliers ');
+  await expect(productPage.productPrice).toHaveText('14.15');
   await expect(productPage.addToCartButton).toBeVisible();
   await expect(productPage.addToFavoritesButton).toBeVisible();
 });
@@ -34,37 +34,36 @@ test('can view product details', async ({ page }) => {
 test('can add product to cart', async ({ page }) => {
   const homePage = new HomePage(page);
   const productPage = new ProductPage(page);
-  const alertMessage = new AlertPage(page);
   const cartPage = new CartPage(page);
 
-  await page.goto('https://practicesoftwaretesting.com');
+  await page.goto('/');
 
-  await homePage.products.filter({hasText: "Slip Joint Pliers"}).click();
+  await homePage.products.filter({hasText: 'Slip Joint Pliers'}).click();
 
-  await expect(page).toHaveURL(/https:\/\/practicesoftwaretesting\.com\/product/);
-  await expect(productPage.productName).toHaveText(" Slip Joint Pliers ");
-  await expect(productPage.productPrice).toHaveText("9.17");
+  await expect(page).toHaveURL(/\/product\//);
+  await expect(productPage.productName).toHaveText(' Slip Joint Pliers ');
+  await expect(productPage.productPrice).toHaveText('9.17');
 
   await productPage.addToCartButton.click();
-  await expect (alertMessage.message).toHaveText(' Product added to shopping cart. ');
-  await expect(alertMessage.message).toBeHidden({ timeout: 8000 });  
+  await expect (productPage.alert.message).toHaveText(' Product added to shopping cart. ');
+  await expect(productPage.alert.message).toBeHidden({ timeout: 8000 });  
   await expect(productPage.header.cartQuantity).toHaveText('1');
 
   await productPage.header.cartButton.click();
-  await expect(page).toHaveURL('https://practicesoftwaretesting.com/checkout');
-  await expect(cartPage.cartItems).toHaveCount(1);
-  await expect(cartPage.productTitles.first()).toHaveText("Slip Joint Pliers ");
+  await expect(page).toHaveURL('/checkout');
+  await expect(cartPage.productTitles).toHaveCount(1);
+  await expect(cartPage.productTitles.first()).toHaveText('Slip Joint Pliers ');
   await expect(cartPage.checkoutButton).toBeVisible();
 });
 
 [
-  { sort: 'name,asc'},
-  { sort: 'name,desc'},
-].forEach(({ sort }) => {
+  SortingOptions.NameAsc,
+  SortingOptions.NameDesc,
+].forEach((sort) => {
   test(`can perform sorting by ${sort}`, async ({ page }) => {
     const homePage = new HomePage(page);
 
-    await page.goto('https://practicesoftwaretesting.com');
+    await page.goto('/');
     
     // the select exists before the app has bound its change handler,
     // so wait for the first product load to complete before sorting
@@ -79,7 +78,7 @@ test('can add product to cart', async ({ page }) => {
       expect(names.length).toBeGreaterThan(1);
 
       const expected = [...names].sort((a, b) => a.localeCompare(b));
-      if (sort === 'name,desc') expected.reverse();
+      if (sort === SortingOptions.NameDesc) expected.reverse();
 
       expect(names).toEqual(expected);
     }).toPass({ timeout: 10000 });
@@ -87,13 +86,13 @@ test('can add product to cart', async ({ page }) => {
 });
 
 [
-  { sort: 'price,asc'},
-  { sort: 'price,desc'},
-].forEach(({ sort }) => {
-  test(`can perform sorting by price ${sort}`, async ({ page }) => {
+  SortingOptions.PriceAsc,
+  SortingOptions.PriceDesc,
+].forEach((sort) => {
+  test(`can perform sorting by ${sort}`, async ({ page }) => {
     const homePage = new HomePage(page);
 
-    await page.goto('https://practicesoftwaretesting.com');
+    await page.goto('/');
     
     // the select exists before the app has bound its change handler,
     // so wait for the first product load to complete before sorting
@@ -110,7 +109,7 @@ test('can add product to cart', async ({ page }) => {
       expect(prices).not.toContain(NaN);
 
       const expected = [...prices].sort((a, b) => a - b);
-      if (sort === 'price,desc') expected.reverse();
+      if (sort === SortingOptions.PriceDesc) expected.reverse();
 
       expect(prices).toEqual(expected);
     }).toPass({ timeout: 10000 });
@@ -120,7 +119,7 @@ test('can add product to cart', async ({ page }) => {
 test('can filter by category', async ({ page }) => {
   const homePage = new HomePage(page);
 
-  await page.goto('https://practicesoftwaretesting.com');
+  await page.goto('/');
 
   // the filters render before the app has bound their change handlers,
   // so wait for the first product load to complete before filtering

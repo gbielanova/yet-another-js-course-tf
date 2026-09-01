@@ -1,5 +1,5 @@
-import { Locator, Page } from "@playwright/test";
-import { HeaderFragment } from "./header.fragment";
+import { Locator, Page } from '@playwright/test';
+import { HeaderFragment } from './header.fragment';
 
 export class AccountPage{
     page: Page;
