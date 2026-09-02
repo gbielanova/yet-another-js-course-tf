@@ -16,6 +16,7 @@ export default defineConfig(
     rules: {
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-floating-promises": "error",
+      "quotes": ["error", "single", { avoidEscape: true }],
     },
   },
   {
