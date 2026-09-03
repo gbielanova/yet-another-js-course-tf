@@ -3,35 +3,37 @@ import { PowerTools } from '../enums/categories.enum';
 import { SortingOptions } from '../enums/sorting.enum';
 import { test } from '../fixtures';
 
-test('can buy a product', async ({ loggedInPage, app }) => {
-  // check login finished successfully
-  await expect(loggedInPage).toHaveURL('/account');
-  await expect(app.accountPage.pageTitle).toHaveText('My account');
-  await expect(app.accountPage.header.navMenuButton).toHaveText('Jane Doe');
+test('can buy a product', async ({ loggedInApp }) => {
+  // the saved session is restored, so /account is reachable without signing in
+  await loggedInApp.page.goto('/account');
+
+  await expect(loggedInApp.page).toHaveURL('/account');
+  await expect(loggedInApp.accountPage.pageTitle).toHaveText('My account');
+  await expect(loggedInApp.accountPage.header.navMenuButton).toHaveText('Jane Doe');
 
   // go to test logic
-  await app.page.goto('/');
+  await loggedInApp.page.goto('/');
   
-  const productName = (await app.homePage.products.first().innerText()).trim();
-  const price = (await app.homePage.productPrices.first().innerText()).trim();
+  const productName = (await loggedInApp.homePage.products.first().innerText()).trim();
+  const price = (await loggedInApp.homePage.productPrices.first().innerText()).trim();
 
-  await app.homePage.products.first().click();
-  await app.productPage.addToCartButton.click();
-  await app.productPage.header.cartButton.click();
+  await loggedInApp.homePage.products.first().click();
+  await loggedInApp.productPage.addToCartButton.click();
+  await loggedInApp.productPage.header.cartButton.click();
 
-  await expect(app.cartPage.productTitles.first()).toHaveText(productName);
-  await expect(app.cartPage.productPrices.first()).toHaveText(price);
-  await expect(app.cartPage.totalPrice).toHaveText(price);
+  await expect(loggedInApp.cartPage.productTitles.first()).toHaveText(productName);
+  await expect(loggedInApp.cartPage.productPrices.first()).toHaveText(price);
+  await expect(loggedInApp.cartPage.totalPrice).toHaveText(price);
 
-  await app.cartPage.checkoutButton.click();
+  await loggedInApp.cartPage.checkoutButton.click();
 
-  await expect(app.checkoutPage.cartCheckoutText).toContainText('Jane Doe');
+  await expect(loggedInApp.checkoutPage.cartCheckoutText).toContainText('Jane Doe');
   
-  await app.checkoutPage.checkoutButtonBillingAddress.click();
-  await app.checkoutPage.postcode.fill('123');
-  await app.checkoutPage.houseNumber.fill('123');
-  await app.checkoutPage.state.fill('Ohio');
-  await app.checkoutPage.checkoutButton.click();
+  await loggedInApp.checkoutPage.checkoutButtonBillingAddress.click();
+  await loggedInApp.checkoutPage.postcode.fill('123');
+  await loggedInApp.checkoutPage.houseNumber.fill('123');
+  await loggedInApp.checkoutPage.state.fill('Ohio');
+  await loggedInApp.checkoutPage.checkoutButton.click();
 
   // expiration date: three months from the day the test runs
   const inThreeMonths = new Date();
@@ -39,14 +41,14 @@ test('can buy a product', async ({ loggedInPage, app }) => {
   inThreeMonths.setMonth(inThreeMonths.getMonth() + 3);
   const expirationDate = `${String(inThreeMonths.getMonth() + 1).padStart(2, '0')}/${inThreeMonths.getFullYear()}`;
 
-  await app.checkoutPage.paymentMethod.selectOption('credit-card');
-  await app.checkoutPage.cardNumber.fill('1111-1111-1111-1111');
-  await app.checkoutPage.expirationDate.fill(expirationDate);
-  await app.checkoutPage.cvv.fill('111');
-  await app.checkoutPage.cardHolder.fill('Jane Doe');
-  await app.checkoutPage.confirmButton.click();
+  await loggedInApp.checkoutPage.paymentMethod.selectOption('credit-card');
+  await loggedInApp.checkoutPage.cardNumber.fill('1111-1111-1111-1111');
+  await loggedInApp.checkoutPage.expirationDate.fill(expirationDate);
+  await loggedInApp.checkoutPage.cvv.fill('111');
+  await loggedInApp.checkoutPage.cardHolder.fill('Jane Doe');
+  await loggedInApp.checkoutPage.confirmButton.click();
 
-  await expect(app.checkoutPage.paymentSuccessMessage).toBeVisible();
+  await expect(loggedInApp.checkoutPage.paymentSuccessMessage).toBeVisible();
 });
 
 test('can view product details', async ({ app }) => {

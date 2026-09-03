@@ -1,31 +1,33 @@
-import { test as base, Page } from '@playwright/test';
+import { test as base } from '@playwright/test';
 import { App } from './pages/app';
+import path from 'path';
+
+const authFile = path.join(__dirname, 'playwright/.auth/user.json');
 
 // Declare the types of your fixtures.
 type MyFixtures = {
-    loggedInPage: Page;
-    app : App;
+    app: App;
+    loggedInApp: App;
 };
 
-// Extend base test by providing "todoPage" and "settingsPage".
-// This new "test" can be used in multiple test files, and each of them will get the fixtures.
+// This new 'test' can be used in multiple test files, and each of them will get the fixtures.
 export const test = base.extend<MyFixtures>({
-    loggedInPage: async ({ app }, use) => {
-    // Set up the fixture.
+    app: async ({ page }, use) => {
+        const app = new App(page);
+        await use(app);
+    },
 
-    await app.page.goto('/');
-    await app.homePage.header.signInButton.click();
-    await app.loginPage.performLogin('customer@practicesoftwaretesting.com', 'welcome01');
+    // Reuses the session saved by the 'perform-login' project instead of
+    // signing in through the UI. Runs in its own context, so tests that ask
+    // only for 'app' stay anonymous.
+    loggedInApp: async ({ browser, baseURL }, use) => {
+        const context = await browser.newContext({ storageState: authFile, baseURL });
+        const app = new App(await context.newPage());
 
-    // Use the fixture value in the test.
-    await use(app.page);
+        await use(app);
 
-    // Clean up the fixture.
-  },
-    app: async ({page}, use) => {
-    const app = new App(page);
-    await use(app);
-  },
+        await context.close();
+    },
 });
 
 export { expect } from '@playwright/test';

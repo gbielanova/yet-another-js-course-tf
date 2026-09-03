@@ -1,21 +1,18 @@
-import { test, expect} from '@playwright/test';
-import { LoginPage } from '../pages/login.page';
-import { HomePage } from '../pages/home.page';
 import path from 'path';
+import { test, expect } from '../fixtures';
 
 const authFile = path.join(__dirname, '../playwright/.auth/user.json');
 
-test('Verify successfull login', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  const homePage = new HomePage(page);
+test('Verify successfull login', async ({ app }) => {
+  await app.page.goto('/');
 
-  await page.goto('/');
+  await app.homePage.header.signInButton.click();
 
-  await homePage.header.signInButton.click();
+  await app.loginPage.performLogin('customer@practicesoftwaretesting.com', 'welcome01');
 
-  await loginPage.performLogin('customer@practicesoftwaretesting.com', 'welcome01');
+  // the token is written to localStorage only once the login request resolves,
+  // so wait for the redirect before capturing the session
+  await expect(app.page).toHaveURL('/account');
 
-  await expect(page).toHaveURL('/account');
-
-  await page.context().storageState({ path: authFile });
+  await app.page.context().storageState({ path: authFile });
 });
