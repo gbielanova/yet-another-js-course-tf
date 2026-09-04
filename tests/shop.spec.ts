@@ -1,9 +1,9 @@
-import {expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { PowerTools } from '../enums/categories.enum';
 import { SortingOptions } from '../enums/sorting.enum';
-import { test } from '../fixtures';
+import { getExpirationDate } from '../utils/date.util';
 
-test('can buy a product', async ({ loggedInApp }) => {
+test('can buy a product', { tag: '@auth' }, async ({ loggedInApp }) => {
   // the saved session is restored, so /account is reachable without signing in
   await loggedInApp.page.goto('/account');
 
@@ -35,15 +35,9 @@ test('can buy a product', async ({ loggedInApp }) => {
   await loggedInApp.checkoutPage.state.fill('Ohio');
   await loggedInApp.checkoutPage.checkoutButton.click();
 
-  // expiration date: three months from the day the test runs
-  const inThreeMonths = new Date();
-  inThreeMonths.setDate(1);
-  inThreeMonths.setMonth(inThreeMonths.getMonth() + 3);
-  const expirationDate = `${String(inThreeMonths.getMonth() + 1).padStart(2, '0')}/${inThreeMonths.getFullYear()}`;
-
   await loggedInApp.checkoutPage.paymentMethod.selectOption('credit-card');
   await loggedInApp.checkoutPage.cardNumber.fill('1111-1111-1111-1111');
-  await loggedInApp.checkoutPage.expirationDate.fill(expirationDate);
+  await loggedInApp.checkoutPage.expirationDate.fill(getExpirationDate(3));
   await loggedInApp.checkoutPage.cvv.fill('111');
   await loggedInApp.checkoutPage.cardHolder.fill('Jane Doe');
   await loggedInApp.checkoutPage.confirmButton.click();
@@ -65,13 +59,16 @@ test('can view product details', async ({ app }) => {
 });
 
 test('can add product to cart', async ({ app }) => {
+  const productName = 'Slip Joint Pliers';
+  const productPrice = '9.17'
+
   await app.page.goto('/');
 
-  await app.homePage.products.filter({hasText: 'Slip Joint Pliers'}).click();
+  await app.homePage.products.filter({hasText: productName}).click();
 
   await expect(app.page).toHaveURL(/\/product\//);
-  await expect(app.productPage.productName).toHaveText(' Slip Joint Pliers ');
-  await expect(app.productPage.productPrice).toHaveText('9.17');
+  await expect(app.productPage.productName).toContainText(productName);
+  await expect(app.productPage.productPrice).toHaveText(productPrice);
 
   await app.productPage.addToCartButton.click();
   await expect (app.productPage.alert.message).toHaveText(' Product added to shopping cart. ');
@@ -81,7 +78,7 @@ test('can add product to cart', async ({ app }) => {
   await app.productPage.header.cartButton.click();
   await expect(app.page).toHaveURL('/checkout');
   await expect(app.cartPage.productTitles).toHaveCount(1);
-  await expect(app.cartPage.productTitles.first()).toHaveText('Slip Joint Pliers ');
+  await expect(app.cartPage.productTitles.first()).toContainText(productName);
   await expect(app.cartPage.checkoutButton).toBeVisible();
 });
 

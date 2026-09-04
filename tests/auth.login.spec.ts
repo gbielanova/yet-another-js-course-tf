@@ -3,7 +3,7 @@ import { test, expect } from '../fixtures';
 
 const authFile = path.join(__dirname, '../playwright/.auth/user.json');
 
-test('Verify successfull login', async ({ app }) => {
+test('Verify successfull login', { tag: '@auth' }, async ({ app }) => {
   await app.page.goto('/');
 
   await app.homePage.header.signInButton.click();
