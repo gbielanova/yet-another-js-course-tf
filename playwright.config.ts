@@ -34,9 +34,9 @@ export default defineConfig({
     {
       name: 'chromium',
       testIgnore: /auth\.login\.spec\.ts/,
-      use: {
-        storageState: 'playwright/.auth/user.json',
-        ...devices['Desktop Chrome'] },
+      /* No storageState here on purpose: tests are anonymous unless they ask
+         for the loggedInApp fixture, which loads the saved session itself. */
+      use: { ...devices['Desktop Chrome'] },
       dependencies: ['perform-login'],
     },
 
