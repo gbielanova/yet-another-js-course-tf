@@ -14,7 +14,10 @@ test('can buy a product', { tag: '@auth' }, async ({ loggedInApp }) => {
 
   // go to test logic
   await loggedInApp.page.goto('/');
-  
+
+  // the grid is populated by a fetch, so nothing is readable until it lands
+  await expect(loggedInApp.homePage.products).not.toHaveCount(0);
+
   const productName = (await loggedInApp.homePage.products.first().innerText()).trim();
   const price = (await loggedInApp.homePage.productPrices.first().innerText()).trim();
 
