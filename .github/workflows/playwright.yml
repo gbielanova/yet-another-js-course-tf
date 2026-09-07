@@ -21,11 +21,10 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      # Only the anonymous tests run here. Anything tagged @auth needs a real
-      # login, and --no-deps skips the perform-login setup project that would
-      # otherwise sign in through the UI.
+      # Runs everything, including @auth tests. The perform-login project runs
+      # first as a dependency and writes playwright/.auth/user.json.
       - name: Run Playwright tests
-        run: npx playwright test --grep-invert @auth --no-deps
+        run: npx playwright test
 
       - name: Upload report
         uses: actions/upload-artifact@v4
