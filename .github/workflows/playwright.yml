@@ -21,10 +21,11 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      # Runs everything, including @auth tests. The perform-login project runs
-      # first as a dependency and writes playwright/.auth/user.json.
+      # Cloudflare challenges the login flow from GitHub's IP ranges, so the
+      # @auth tests are skipped here and run locally instead. --no-deps also
+      # skips the perform-login setup project, which grep filters do not.
       - name: Run Playwright tests
-        run: npx playwright test
+        run: npx playwright test --grep-invert @auth --no-deps
 
       - name: Upload report
         uses: actions/upload-artifact@v4
