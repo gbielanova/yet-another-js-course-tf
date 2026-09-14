@@ -2,6 +2,7 @@ import { test, expect } from '../fixtures';
 import { PowerTools } from '../enums/categories.enum';
 import { SortingOptions } from '../enums/sorting.enum';
 import { getExpirationDate } from '../utils/date.util';
+import { ProductsResponse } from '../types/products.type';
 
 test('can buy a product', { tag: '@auth' }, async ({ loggedInApp }) => {
   // the saved session is restored, so /account is reachable without signing in
@@ -13,7 +14,10 @@ test('can buy a product', { tag: '@auth' }, async ({ loggedInApp }) => {
 
   // go to test logic
   await loggedInApp.page.goto('/');
-  
+
+  // the grid is populated by a fetch, so nothing is readable until it lands
+  await expect(loggedInApp.homePage.products).not.toHaveCount(0);
+
   const productName = (await loggedInApp.homePage.products.first().innerText()).trim();
   const price = (await loggedInApp.homePage.productPrices.first().innerText()).trim();
 
@@ -155,4 +159,35 @@ test('can filter by category', async ({ app }) => {
       expect(name).toContain(PowerTools.Sander);
     }
   }).toPass({ timeout: 10000 });
+});
+
+
+test('shows 20 products when the api returns 20', async ({ app }) => {
+  const expectedCount = 20;
+
+  // the app calls /products with a query string, so match on the path
+  await app.page.route(
+    (url) => url.hostname === 'api.practicesoftwaretesting.com' && url.pathname === '/products',
+    async (route) => {
+      const response = await route.fetch();
+      const body = await response.json() as ProductsResponse;
+
+      // pad the real page out to 20 entries, keeping ids unique so the
+      // app's list rendering treats every entry as a distinct product
+      const products = [...body.data];
+      while (products.length < expectedCount) {
+        const source = body.data[products.length % body.data.length];
+        products.push({ ...source, id: `${source.id}-copy-${products.length}` });
+      }
+
+      await route.fulfill({
+        response,
+        json: { ...body, data: products, per_page: expectedCount, to: expectedCount },
+      });
+    },
+  );
+
+  await app.page.goto('/');
+
+  await expect(app.homePage.products).toHaveCount(expectedCount);
 });

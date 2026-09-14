@@ -21,9 +21,9 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      # Only the anonymous tests run here. Anything tagged @auth needs a real
-      # login, and --no-deps skips the perform-login setup project that would
-      # otherwise sign in through the UI.
+      # Cloudflare challenges the login flow from GitHub's IP ranges, so the
+      # @auth tests are skipped here and run locally instead. --no-deps also
+      # skips the perform-login setup project, which grep filters do not.
       - name: Run Playwright tests
         run: npx playwright test --grep-invert @auth --no-deps
 
