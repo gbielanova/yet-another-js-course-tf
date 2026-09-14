@@ -1,5 +1,6 @@
 import path from 'path';
 import { test } from '../fixtures';
+import { customer } from '../data/credentials.data';
 
 const authFile = path.join(__dirname, '../playwright/.auth/user.json');
 
@@ -8,8 +9,8 @@ test('Verify successfull login', { tag: '@auth' }, async ({ app, request }) => {
 
   const resp = await request.post(`${apiUrl}/users/login`, {
     data: {
-      'email': 'customer@practicesoftwaretesting.com',
-      'password': 'welcome01'
+      'email': customer.email,
+      'password': customer.password
     }
   });
   const jsonData = await resp.json() as { access_token: string };
