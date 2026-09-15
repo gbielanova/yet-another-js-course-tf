@@ -35,11 +35,22 @@ export default defineConfig({
   projects: [
     {name: 'perform-login', testMatch: /auth\.login\.spec\.ts/ },
 
+    /* No storageState in these projects on purpose: tests are anonymous unless
+       they ask for the loggedInApp fixture, which loads the saved session itself.
+       Every test carries exactly one of @smoke / @regression, so the two
+       projects together run the whole suite once. */
     {
-      name: 'chromium',
+      name: 'smoke',
+      grep: /@smoke/,
       testIgnore: /auth\.login\.spec\.ts/,
-      /* No storageState here on purpose: tests are anonymous unless they ask
-         for the loggedInApp fixture, which loads the saved session itself. */
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['perform-login'],
+    },
+
+    {
+      name: 'regression',
+      grep: /@regression/,
+      testIgnore: /auth\.login\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['perform-login'],
     },
