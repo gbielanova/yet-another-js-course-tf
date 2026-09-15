@@ -3,6 +3,7 @@ import { PowerTools } from '../enums/categories.enum';
 import { SortingOptions } from '../enums/sorting.enum';
 import { getExpirationDate } from '../utils/date.util';
 import { ProductsResponse } from '../types/products.type';
+import { customer } from '../data/credentials.data';
 
 test('can buy a product', { tag: '@auth' }, async ({ loggedInApp }) => {
   // the saved session is restored, so /account is reachable without signing in
@@ -10,7 +11,7 @@ test('can buy a product', { tag: '@auth' }, async ({ loggedInApp }) => {
 
   await expect(loggedInApp.page).toHaveURL('/account');
   await expect(loggedInApp.accountPage.pageTitle).toHaveText('My account');
-  await expect(loggedInApp.accountPage.header.navMenuButton).toHaveText('Jane Doe');
+  await expect(loggedInApp.accountPage.header.navMenuButton).toHaveText(customer.name);
 
   // go to test logic
   await loggedInApp.page.goto('/');
@@ -31,7 +32,7 @@ test('can buy a product', { tag: '@auth' }, async ({ loggedInApp }) => {
 
   await loggedInApp.cartPage.checkoutButton.click();
 
-  await expect(loggedInApp.checkoutPage.cartCheckoutText).toContainText('Jane Doe');
+  await expect(loggedInApp.checkoutPage.cartCheckoutText).toContainText(customer.name);
   
   await loggedInApp.checkoutPage.checkoutButtonBillingAddress.click();
   await loggedInApp.checkoutPage.postcode.fill('123');
@@ -43,7 +44,7 @@ test('can buy a product', { tag: '@auth' }, async ({ loggedInApp }) => {
   await loggedInApp.checkoutPage.cardNumber.fill('1111-1111-1111-1111');
   await loggedInApp.checkoutPage.expirationDate.fill(getExpirationDate(3));
   await loggedInApp.checkoutPage.cvv.fill('111');
-  await loggedInApp.checkoutPage.cardHolder.fill('Jane Doe');
+  await loggedInApp.checkoutPage.cardHolder.fill(customer.name);
   await loggedInApp.checkoutPage.confirmButton.click();
 
   await expect(loggedInApp.checkoutPage.paymentSuccessMessage).toBeVisible();
