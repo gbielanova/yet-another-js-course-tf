@@ -7,6 +7,9 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    # secrets and vars below are defined on the "Test" environment, not the
+    # repository, so the job has to opt into it to receive them
+    environment: Test
     steps:
       - uses: actions/checkout@v4
 
