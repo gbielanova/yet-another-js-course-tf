@@ -1,12 +1,16 @@
-name: Playwright Tests
+name: Regression Tests
 
 on:
   pull_request:
+  workflow_dispatch:
 
 jobs:
-  test:
+  regression:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    # secrets and vars below are defined on the "Test" environment, not the
+    # repository, so the job has to opt into it to receive them
+    environment: Test
     steps:
       - uses: actions/checkout@v4
 
@@ -19,18 +23,23 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps chromium
 
       # Cloudflare challenges the login flow from GitHub's IP ranges, so the
       # @auth tests are skipped here and run locally instead. --no-deps also
       # skips the perform-login setup project, which grep filters do not.
-      - name: Run Playwright tests
-        run: npx playwright test --grep-invert @auth --no-deps
+      - name: Run regression tests
+        run: npx playwright test --project=regression --grep-invert @auth --no-deps
+        env:
+          BASE_URL: ${{ vars.BASE_URL }}
+          USER_NAME: ${{ secrets.USER_NAME }}
+          USER_EMAIL: ${{ secrets.USER_EMAIL }}
+          USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
 
       - name: Upload report
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report
+          name: regression-report
           path: playwright-report/
           retention-days: 30

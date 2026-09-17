@@ -3,14 +3,15 @@ import { PowerTools } from '../enums/categories.enum';
 import { SortingOptions } from '../enums/sorting.enum';
 import { getExpirationDate } from '../utils/date.util';
 import { ProductsResponse } from '../types/products.type';
+import { customer } from '../data/credentials.data';
 
-test('can buy a product', { tag: '@auth' }, async ({ loggedInApp }) => {
+test('can buy a product', { tag: ['@smoke', '@auth'] }, async ({ loggedInApp }) => {
   // the saved session is restored, so /account is reachable without signing in
   await loggedInApp.page.goto('/account');
 
   await expect(loggedInApp.page).toHaveURL('/account');
   await expect(loggedInApp.accountPage.pageTitle).toHaveText('My account');
-  await expect(loggedInApp.accountPage.header.navMenuButton).toHaveText('Jane Doe');
+  await expect(loggedInApp.accountPage.header.navMenuButton).toHaveText(customer.name);
 
   // go to test logic
   await loggedInApp.page.goto('/');
@@ -31,7 +32,7 @@ test('can buy a product', { tag: '@auth' }, async ({ loggedInApp }) => {
 
   await loggedInApp.cartPage.checkoutButton.click();
 
-  await expect(loggedInApp.checkoutPage.cartCheckoutText).toContainText('Jane Doe');
+  await expect(loggedInApp.checkoutPage.cartCheckoutText).toContainText(customer.name);
   
   await loggedInApp.checkoutPage.checkoutButtonBillingAddress.click();
   await loggedInApp.checkoutPage.postcode.fill('123');
@@ -43,13 +44,13 @@ test('can buy a product', { tag: '@auth' }, async ({ loggedInApp }) => {
   await loggedInApp.checkoutPage.cardNumber.fill('1111-1111-1111-1111');
   await loggedInApp.checkoutPage.expirationDate.fill(getExpirationDate(3));
   await loggedInApp.checkoutPage.cvv.fill('111');
-  await loggedInApp.checkoutPage.cardHolder.fill('Jane Doe');
+  await loggedInApp.checkoutPage.cardHolder.fill(customer.name);
   await loggedInApp.checkoutPage.confirmButton.click();
 
   await expect(loggedInApp.checkoutPage.paymentSuccessMessage).toBeVisible();
 });
 
-test('can view product details', async ({ app }) => {
+test('can view product details', { tag: '@smoke' }, async ({ app }) => {
   await app.page.goto('/');
 
   await app.homePage.combinationPliersHeader.click();
@@ -62,7 +63,7 @@ test('can view product details', async ({ app }) => {
   await expect(app.productPage.addToFavoritesButton).toBeVisible();
 });
 
-test('can add product to cart', async ({ app }) => {
+test('can add product to cart', { tag: '@smoke' }, async ({ app }) => {
   const productName = 'Slip Joint Pliers';
   const productPrice = '9.17'
 
@@ -90,7 +91,7 @@ test('can add product to cart', async ({ app }) => {
   SortingOptions.NameAsc,
   SortingOptions.NameDesc,
 ].forEach((sort) => {
-  test(`can perform sorting by ${sort}`, async ({ app }) => {
+  test(`can perform sorting by ${sort}`, { tag: '@regression' }, async ({ app }) => {
     await app.page.goto('/');
     
     // the select exists before the app has bound its change handler,
@@ -117,7 +118,7 @@ test('can add product to cart', async ({ app }) => {
   SortingOptions.PriceAsc,
   SortingOptions.PriceDesc,
 ].forEach((sort) => {
-  test(`can perform sorting by ${sort}`, async ({ app }) => {
+  test(`can perform sorting by ${sort}`, { tag: '@regression' }, async ({ app }) => {
     await app.page.goto('/');
     
     // the select exists before the app has bound its change handler,
@@ -142,7 +143,7 @@ test('can add product to cart', async ({ app }) => {
   });
 });
 
-test('can filter by category', async ({ app }) => {
+test('can filter by category', { tag: '@regression' }, async ({ app }) => {
   await app.page.goto('/');
 
   // the filters render before the app has bound their change handlers,
@@ -162,7 +163,7 @@ test('can filter by category', async ({ app }) => {
 });
 
 
-test('shows 20 products when the api returns 20', async ({ app }) => {
+test('shows 20 products when the api returns 20', { tag: '@regression' }, async ({ app }) => {
   const expectedCount = 20;
 
   // the app calls /products with a query string, so match on the path

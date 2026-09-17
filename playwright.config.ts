@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
+import { BASE_URL } from './config/baseConfig';
+
+dotenv.config({ path: path.resolve(__dirname, '.env'), quiet: true });
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -20,7 +25,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
-    baseURL: 'https://practicesoftwaretesting.com',
+    baseURL: BASE_URL,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -31,11 +36,22 @@ export default defineConfig({
   projects: [
     {name: 'perform-login', testMatch: /auth\.login\.spec\.ts/ },
 
+    /* No storageState in these projects on purpose: tests are anonymous unless
+       they ask for the loggedInApp fixture, which loads the saved session itself.
+       Every test carries exactly one of @smoke / @regression, so the two
+       projects together run the whole suite once. */
     {
-      name: 'chromium',
+      name: 'smoke',
+      grep: /@smoke/,
       testIgnore: /auth\.login\.spec\.ts/,
-      /* No storageState here on purpose: tests are anonymous unless they ask
-         for the loggedInApp fixture, which loads the saved session itself. */
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['perform-login'],
+    },
+
+    {
+      name: 'regression',
+      grep: /@regression/,
+      testIgnore: /auth\.login\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['perform-login'],
     },
