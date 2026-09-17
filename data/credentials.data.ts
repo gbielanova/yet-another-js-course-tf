@@ -1,13 +1,7 @@
-function requireEnv(name: string): string {
-    const value = process.env[name];
-    if (!value) {
-        throw new Error(`Missing environment variable ${name}. Copy .env.example to .env and fill it in.`);
-    }
-    return value;
-}
+import { USER_EMAIL, USER_NAME, USER_PASSWORD } from '../config/baseConfig';
 
 export const customer = {
-    name: requireEnv('USER_NAME'),
-    email: requireEnv('USER_EMAIL'),
-    password: requireEnv('USER_PASSWORD'),
+    name: USER_NAME,
+    email: USER_EMAIL,
+    password: USER_PASSWORD
 };
